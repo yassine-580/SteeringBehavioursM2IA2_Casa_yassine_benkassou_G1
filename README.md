@@ -1,195 +1,150 @@
-# 🚚🚨 Jeu Logistique & Poursuite Policière — Obstacle Avoidance
+# 🚚🚨 Police & Camion — Obstacle Avoidance & Steering Behaviors
 
-> **Projet M2 IA2 Casablanca — Intelligence Artificielle Réactive & Steering Behaviours (Craig Reynolds)**  
-> Développé par **[yassine-580](https://github.com/yassine-580)**
+> Projet M2 IA2 Casablanca — Intelligence Artificielle Réactive & Steering Behaviors (Craig Reynolds)  
+> Développé par **[Yassine Benkassou](https://github.com/yassine-580)**
 
-![Tests](https://img.shields.io/badge/Tests-39%2F39%20Pass-brightgreen?style=for-the-badge&logo=node.js)
-![p5.js](https://img.shields.io/badge/p5.js-v1.4+-ED225D?style=for-the-badge&logo=p5.js)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript)
-![Audio](https://img.shields.io/badge/Web%20Audio-API%20Synth-blue?style=for-the-badge)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/fr/docs/Web/JavaScript)
+[![p5.js](https://img.shields.io/badge/p5.js-creative%20coding-ED225D)](https://p5js.org/)
+[![Tests](https://img.shields.io/badge/Tests-39%20Pass-brightgreen?logo=node.js)](6-ObstacleAvoidance/tests/obstacleAvoidance.test.mjs)
+
+---
+
+## 🎮 Jouer en ligne
+
+**[👉 Lancer le jeu Police & Camion sur GitHub Pages](https://yassine-580.github.io/SteeringBehavioursM2IA2_Casa_yassine_benkassou_G1/)**
+
+> Si le lien n'est pas encore actif, activez GitHub Pages dans **Settings → Pages** du dépôt, en choisissant la branche `main` et le dossier `/(root)`.
 
 ---
 
 ## 📖 Présentation du Projet
 
-Ce projet est un **jeu de stratégie et d'action tactique en temps réel** basé sur la physique des forces directrices (*Steering Behaviors*) théorisées par **Craig Reynolds**.
+**Police & Camion** est un jeu tactique et pédagogique en temps réel mettant en œuvre les **forces de déplacement autonomes (*Steering Behaviors*)** théorisées par Craig W. Reynolds.
 
-Il simule une chaîne logistique sous haute tension :
-1. **Un hélicoptère** déploie des conteneurs de marchandises sensibles sur un héliport.
-2. **Un camion (pilotable au clavier ou guidé par IA)** doit rallier la marchandise qui déambule au sol, l'arrimer solidement à son bord.
-3. **La police d'élite** se met en traque immédiate avec calcul d'anticipation vectorielle dès que la cargaison est chargée.
-4. Le camion doit traverser les réseaux routiers, slalomer entre les obstacles et barrages tactiques, pour **livrer la cargaison au Garage** en sécurité.
-
-Le code source complet du jeu se trouve dans le dossier [`6-ObstacleAvoidance/`](file:///c:/Users/yassine/Desktop/police&Camion/6-ObstacleAvoidance/).
+Le scénario simule une chaîne logistique sous haute tension :
+1. **Largage aérien (`AIRDROP`)** : un hélicoptère cargo rejoint l'héliport pour parachuter une cargaison sensible.
+2. **Récupération au sol (`LOADING`)** : la cargaison déambule de façon autonome. Le camion allié (pilotable manuellement ou en IA autonome) doit la rejoindre et l'arrimer.
+3. **Fuite & Livraison (`ESCAPE`)** : dès l'arrimage, les patrouilles de police d'élite se lancent à la poursuite du camion avec anticipation prédictive vectorielle. Le camion doit slalomer entre les obstacles et barrages pour sécuriser la livraison au Garage.
 
 ---
 
-## 🎯 Les 3 Phases de Jeu d'une Mission
+## 🏆 Les 5 Niveaux de Défi
 
-```mermaid
-graph LR
-    A["🚁 Phase 1: AIRDROP<br/>Largage par Hélicoptère"] --> B["📦 Phase 2: LOADING<br/>Ralliement & Arrimage Camion"]
-    B --> C["🚨 Phase 3: ESCAPE<br/>Fuite sous Pression Policière"]
-    C --> D["🏁 Garage<br/>Livraison Validée !"]
-```
-
-1. **Phase 1 — Largage Aérien (`AIRDROP`)** :
-   - L'hélicoptère décolle et navigue vers l'héliport avec une force d'arrivée (`arrive`).
-   - Phase stationnaire de survol (`hover_drop`) avec descente treuillée de la caisse (`CargoBox`).
-   - L'hélicoptère repart une fois la caisse déposée.
-
-2. **Phase 2 — Chargement (`LOADING`)** :
-   - La cargaison au sol possède son propre comportement d'errance douce (`wander`).
-   - Le camion le plus proche (joueur ou allié) calcule sa trajectoire d'approche et s'arrime au contact.
-
-3. **Phase 3 — La Fuite sous Pression Policière (`ESCAPE`)** :
-   - Déclenchement de l'alarme sonore de fuite.
-   - Les véhicules de police identifient en priorité absolue le camion transporteur (`targetPriority`).
-   - Les barrages routiers et obstacles doivent être évités tout en maintenant la vitesse jusqu'au garage.
+| Niveau | Nom | Description & Comportements |
+|:---:|---|---|
+| **1** | Introduction | Prise en main des mécaniques, vitesse modérée |
+| **2** | Pression | Police plus véloce, trafic et obstacles accrus |
+| **3** | Barrages | Apparition de barrages routiers et camions alliés |
+| **4** | Traque | Interception prédictive avancée, patrouilles multiples |
+| **5** | Défi Final | Météo pluvieuse dynamique, adhérence réduite et traque maximale |
 
 ---
 
-## 🏆 Les 5 Niveaux de Jeu
+## 🎮 Commandes du Joueur
 
-| Niveau | Titre & Thématique | Spécificités & Difficulté | Objectif |
-| :---: | :--- | :--- | :---: |
-| **Niv. 1** | **Introduction & Sécurité** | Route ouverte simple, 1 camion, 1 police lente, aucun barrage. | 1 livraison |
-| **Niv. 2** | **Obstacles & Pression** | Circuit routier fermé en boucle, police plus agressive, temps de réaction réduit. | 1 livraison |
-| **Niv. 3** | **Complexité Tactique** | Déploiement de **barrages routiers destructibles** (`Roadblock`), 2 camions en circulation. | 2 livraisons |
-| **Niv. 4** | **Urgence Maximale** | **2 voitures de police d'élite** avec forte anticipation vectorielle prédictive. | 2 livraisons |
-| **Niv. 5** | **Le Grand Défi Final** | **Tempête de pluie dynamique**, visibilité réduite, **3 intercepteurs de police** coordonnés. | 3 livraisons |
-
----
-
-## 🚨 Écran de Game Over Intelligent
-
-Lorsque tous les camions sont interceptés par la police, un écran de Game Over dynamique et immersif s'affiche et offre un **double choix au joueur** :
-
-- **`🔁 REJOUER CE NIVEAU (NIV. X)`** :
-  - *Raccourci* : <kbd>ENTRÉE</kbd> ou <kbd>ESPACE</kbd> ou clic sur le bouton vert.
-  - Conserve la progression et relance le niveau actuel pour une nouvelle tentative.
-- **`⏮️ RECOMMENCER AU NIVEAU 1`** :
-  - *Raccourci* : <kbd>R</kbd> ou <kbd>1</kbd> ou clic sur le bouton gris.
-  - Remet les scores et statistiques à zéro et redémarre la campagne depuis le début.
+| Touche / Action | Fonction |
+|---|---|
+| `ZQSD` ou `Flèches` | Piloter le camion manuellement |
+| `J` | Basculer entre conduite Manuelle et IA Automatique |
+| `U` | Afficher / masquer l'interface (HUD) |
+| `L` | Changer de niveau |
+| `H` | Déclencher un largage hélicoptère immédiat |
+| `Tab` ou `T` | Ouvrir / fermer le panneau de réglages |
+| `S` | Changer la cible des camions autonomes |
+| `Clic gauche` (zone vide) | Poser un obstacle personnalisé |
+| `Clic droit` (sur obstacle) | Supprimer un obstacle |
+| `X` ou `Suppr` | Supprimer le dernier obstacle posé |
+| `Maj` + `X` | Supprimer tous les obstacles personnalisés |
+| `C` | Spawner un camion allié supplémentaire |
+| `P` | Spawner une voiture de police supplémentaire |
+| `D` | Activer / désactiver la vue Débogage (vecteurs de force, rayons) |
+| `M` | Activer / couper les effets sonores (Web Audio API) |
+| `R` | Réinitialiser la partie au Niveau 1 |
 
 ---
 
-## 🧠 Comportements de Direction (Steering Behaviors)
+## 🧠 Concepts d'IA Réactive & Steering Behaviors
 
-Toutes les entités mobiles dérivent de la classe de base `Vehicle` :
+Les agents autonomes du jeu combinent plusieurs algorithmes de Craig Reynolds :
 
-| Comportement | Formule & Rôle | Entités utilisatrices |
-| :--- | :--- | :--- |
-| **Seek (Poursuite)** | $\vec{F}_{seek} = \vec{V}_{souhaitée} - \vec{V}_{actuelle}$ | Camions vers cible, Hélicoptère |
-| **Flee (Fuite)** | Direction opposée à la menace dans un rayon paramétrable | Camions évitant la Police |
-| **Arrive (Freinage progressif)** | Vitesse proportionnelle à la distance sous le rayon d'arrivée | Hélicoptère sur Helipad, Camions au Garage |
-| **Wander (Errance)** | Projection d'un cercle d'errance avec déplacement angulaire aléatoire | Cargaison libre au sol |
-| **Obstacle Avoidance** | Boîte de collision englobante projetée en avant + force répulsive orthogonale | Tous les véhicules (Camions & Police) |
-| **Path Following** | Suivi fluide de checkpoints séquentiels avec seuil de tolérance | Camions et patrouille de Police |
-| **Poursuite Prédictive** | Cible $\vec{T}_{futur} = \vec{Pos}_{camion} + \vec{Vel}_{camion} \times t_{anticipation}$ | Véhicules de Police |
+- **Seek & Flee** : attraction vers la cargaison / fuite face à la police.
+- **Arrive** : décélération progressive et stationnement précis à l'héliport et au garage.
+- **Wander** : errance fluide de la cargaison et des véhicules de patrouille.
+- **Obstacle & Vehicle Avoidance** : calcul préventif des collisions par projection de vecteurs d'anticipation et répulsion tangentielle.
+- **Path Following** : suivi du réseau routier et des waypoints.
+- **Pursuit Prédictive** : calcul de la position future de la cible pour l'intercepter avec un angle optimal.
 
 ---
 
-## 🎮 Commandes & Raccourcis Clavier
+## 🛠️ Stack Technique
 
-| Raccourci | Action |
-| :--- | :--- |
-| <kbd>Z</kbd> <kbd>Q</kbd> <kbd>S</kbd> <kbd>D</kbd> ou <kbd>Flèches</kbd> | Conduire manuellement le Camion Joueur |
-| <kbd>J</kbd> | Basculer le Camion Joueur entre **Manuel (ZQSD)** et **Automatique (IA)** |
-| <kbd>U</kbd> | Masquer / Afficher le grand panneau HUD supérieur |
-| <kbd>Tab</kbd> ou <kbd>T</kbd> | Ouvrir / Fermer le tiroir de réglages physiques (vitesses, forces, etc.) |
-| <kbd>L</kbd> | Changer de niveau (cycle 1 à 5) |
-| <kbd>H</kbd> | Déclencher un largage hélicoptère immédiat |
-| <kbd>S</kbd> | Changer la cible des camions (Réseau routier vs Curseur Souris) |
-| <kbd>Clic gauche vide</kbd> | Ajouter un obstacle personnalisé sur le terrain |
-| <kbd>Clic droit sur obstacle</kbd> | Supprimer l'obstacle ciblé |
-| <kbd>X</kbd> / <kbd>Suppr</kbd> | Supprimer le dernier obstacle posé |
-| <kbd>Shift</kbd> + <kbd>X</kbd> | Vider tous les obstacles |
-| <kbd>C</kbd> | Spawner un camion allié supplémentaire |
-| <kbd>P</kbd> | Spawner une voiture de police supplémentaire |
-| <kbd>M</kbd> | Couper / Réactiver le son |
-| <kbd>D</kbd> | Activer / Désactiver l'affichage de débogage vectoriel |
-| <kbd>R</kbd> | Réinitialiser la partie au Niveau 1 |
+- **JavaScript ES6+** (classes modulaires, programmation orientée objet)
+- **p5.js** (moteur de rendu 2D Canvas)
+- **Web Audio API** (synthèse audio temps réel sans assets externes lourds)
+- **Node.js Test Runner** (39 tests unitaires automatisés)
 
 ---
 
-## 🏗️ Architecture du Projet
+## 📂 Architecture des Fichiers
 
 ```text
-police&Camion/
 ├── 6-ObstacleAvoidance/
-│   ├── index.html               # Page principale avec HUD et canvas plein écran
-│   ├── style.css                # Styles CSS modernes (glassmorphism, panneaux, sliders)
-│   ├── sketch.js                # Boucle principale p5.js, phases, niveaux et Game Over
-│   ├── vehicle.js               # Classe de base Vehicle (Euler, steering, limites)
-│   ├── Camion.js                # Camion allié (path following, fuite police, chargement)
-│   ├── PlayerCamion.js          # Camion du joueur (contrôles ZQSD ou pilotage IA)
-│   ├── Police.js                # Véhicule de police (interception intelligente & patrouille)
-│   ├── Helicopter.js            # Hélicoptère autonome (approche, hover, largage treuil)
-│   ├── Helipad.js               # Zone d'atterrissage et d'ancrage du largage
-│   ├── CargoBox.js              # Marchandise mobile (altitude, wander, arrimage)
-│   ├── RoadNetwork.js           # Réseau routier procédural (Niveaux 1 à 5, ouverts/boucles)
-│   ├── Roadblock.js             # Barrages policiers destructibles infligeant des dégâts
-│   ├── Garage.js                # Bâtiment de dépôt et validation des livraisons
-│   ├── obstacle.js              # Obstacles circulaires sur la carte
-│   ├── SoundEffects.js          # Moteur audio synthétisé Web Audio API (aucun asset externe)
-│   ├── libraries/               # Librairies externes (p5.min.js, p5.sound.min.js)
-│   └── tests/
-│       └── obstacleAvoidance.test.mjs  # Suite de 39 tests unitaires automatisés
-├── README.md                    # Documentation complète
-└── .gitignore                   # Fichiers ignorés par git
+│   ├── index.html              # Interface principale du jeu
+│   ├── style.css               # Design sombre & glassmorphism
+│   ├── sketch.js               # Boucle de jeu, HUD et gestion des niveaux
+│   ├── vehicle.js              # Classe de base des Steering Behaviors (Reynolds)
+│   ├── Camion.js               # IA du camion logistique autonome
+│   ├── PlayerCamion.js         # Camion contrôlable par le joueur (manuel / auto)
+│   ├── Police.js               # IA de police avec poursuite prédictive
+│   ├── Helicopter.js           # IA de l'hélicoptère de largage
+│   ├── CargoBox.js             # Cargaison avec physique et arrimage
+│   ├── Helipad.js              # Zone d'atterrissage et de largage
+│   ├── Garage.js               # Zone d'arrivée et de livraison
+│   ├── RoadNetwork.js          # Réseau routier et waypoints
+│   ├── Roadblock.js            # Barrages tactiques
+│   ├── obstacle.js             # Obstacles statiques circulaires
+│   ├── SoundEffects.js         # Synthétiseur audio Web Audio API
+│   ├── libraries/              # Bibliothèques p5.js
+│   └── tests/                  # 39 tests unitaires Node.js
+├── index.html                  # Point d'entrée racine avec redirection GitHub Pages
+└── README.md                   # Documentation officielle du projet
 ```
 
 ---
 
-## 🧪 Tests Automatisés
+## 🚀 Installation & Exécution en Local
 
-Le projet comprend une suite complète de **39 tests unitaires** testant toutes les mécaniques :
-
-```bash
-cd 6-ObstacleAvoidance
-node --test tests/obstacleAvoidance.test.mjs
-```
-
----
-
-## 🚀 Lancement Local
-
-### Méthode 1 — Extension VS Code Live Server (Recommandé)
-1. Ouvrez le dossier dans VS Code.
-2. Faites un clic droit sur `6-ObstacleAvoidance/index.html` > **"Open with Live Server"**.
-
-### Méthode 2 — Serveur HTTP Python
-```bash
-cd 6-ObstacleAvoidance
-python -m http.server 8000
-```
-Puis accédez à `http://localhost:8000`
-
----
-
-## 🌐 Déploiement sur GitHub Pages
-
-Pour héberger et jouer à votre jeu directement depuis votre compte GitHub :
-
-1. Poussez le projet sur GitHub :
+1. **Cloner le dépôt** :
    ```bash
-   git init
-   git add .
-   git commit -m "Initial commit: Jeu Police & Camion avec Steering Behaviours et 5 Niveaux"
-   git branch -M main
-   git remote add origin https://github.com/yassine-580/VOTRE_DEPOT.git
-   git push -u origin main
+   git clone https://github.com/yassine-580/SteeringBehavioursM2IA2_Casa_yassine_benkassou_G1.git
+   cd SteeringBehavioursM2IA2_Casa_yassine_benkassou_G1
    ```
-2. Sur GitHub, allez dans les **Settings** de votre dépôt > **Pages**.
-3. Sous **Branch**, sélectionnez `main` (ou dossier `/docs`) et cliquez sur **Save**.
-4. Votre jeu sera accessible en ligne sur :  
-   `https://yassine-580.github.io/VOTRE_DEPOT/`
+
+2. **Lancer un serveur local** (Python ou Live Server) :
+   ```bash
+   python -m http.server 8000
+   ```
+   Puis ouvrir [http://localhost:8000](http://localhost:8000).
+
+3. **Lancer la suite de tests** :
+   ```bash
+   cd 6-ObstacleAvoidance
+   node --test tests/obstacleAvoidance.test.mjs
+   ```
+
+---
+
+## 🌐 Déploiement GitHub Pages
+
+1. Rendez-vous sur votre dépôt : [yassine-580/SteeringBehavioursM2IA2_Casa_yassine_benkassou_G1](https://github.com/yassine-580/SteeringBehavioursM2IA2_Casa_yassine_benkassou_G1).
+2. Ouvrez **Settings** → **Pages**.
+3. Sous **Source**, sélectionnez **Deploy from a branch**.
+4. Choisissez la branche `main` et le répertoire `/ (root)`, puis cliquez sur **Save**.
+5. Votre jeu sera en ligne sur : `https://yassine-580.github.io/SteeringBehavioursM2IA2_Casa_yassine_benkassou_G1/`.
 
 ---
 
 ## 👨‍💻 Auteur
 
-- **Yassine** ([@yassine-580](https://github.com/yassine-580))
-- Formation : **Master 2 IA2 — Intelligence Artificielle & Applications**, Casablanca.
-- Cours : *IAs Réactives & Steering Behaviours* (Michel Buffa).
+**Yassine Benkassou** — [@yassine-580](https://github.com/yassine-580)  
+Master 2 IA2 Casablanca — Intelligence Artificielle & Systèmes Multi-Agents.
