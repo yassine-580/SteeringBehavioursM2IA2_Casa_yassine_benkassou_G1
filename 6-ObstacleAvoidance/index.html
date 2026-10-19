@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obstacle Avoidance — Camions, Police & Garage</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <!-- Bibliothèques p5.js -->
+    <script src="libraries/p5.min.js"></script>
+    <script src="libraries/p5.sound.min.js"></script>
+
+    <!-- Code de base protégé -->
+    <script src="vehicle.js"></script>
+
+    <!-- Sous-classes de Vehicle et Entités (un fichier par entité) -->
+    <script src="obstacle.js"></script>
+    <script src="RoadNetwork.js"></script>
+    <script src="Helipad.js"></script>
+    <script src="CargoBox.js"></script>
+    <script src="Helicopter.js"></script>
+    <script src="Roadblock.js"></script>
+    <script src="Garage.js"></script>
+    <script src="Camion.js"></script>
+    <script src="PlayerCamion.js"></script>
+    <script src="Police.js"></script>
+
+    <!-- Gestionnaire audio Web Audio API -->
+    <script src="SoundEffects.js"></script>
+
+    <!-- Point d'entrée de la simulation -->
+    <script src="sketch.js"></script>
+  </head>
+  <body>
+    <div id="hud-container">
+      <div class="hud-panel">
+        <div class="hud-header">
+          <div class="hud-title">🚁 JEU D'ACTION & STRATÉGIE LOGISTIQUE — 5 NIVEAUX & 3 PHASES DE JEU</div>
+          <button id="hud-collapse-btn" class="hud-collapse-btn" title="Masquer le menu (Raccourci U)">👁️ Masquer <kbd>U</kbd></button>
+        </div>
+        <div class="hud-stats">
+          <span class="badge badge-warning" id="level-btn" style="cursor: pointer;" title="Cliquer pour changer de niveau 1 à 5 (Touche L)">🏆 Niveau : <b id="stat-level">1 (0/1)</b></span>
+          <span class="badge badge-info" id="phase-badge">⏱️ Phase : <b id="stat-phase">1. LARGAGE AÉRIEN</b></span>
+          <span class="badge badge-warning" id="cargo-badge">📦 Cargaison : <b id="stat-cargo">EN VOL (HÉLICO)</b></span>
+          <span class="badge badge-success">🏁 Livrés au Garage : <b id="stat-delivered">0</b></span>
+          <span class="badge badge-success" id="player-drive-badge">🎮 Joueur : <b id="stat-drive-mode">MANUEL (ZQSD)</b></span>
+          <span class="badge badge-danger">🚨 Interceptions Police : <b id="stat-captured">0</b></span>
+          <span class="badge badge-danger">💥 Dégâts / Crashes : <b id="stat-crashes">0</b></span>
+          <span class="badge badge-info" id="settings-toggle-btn" style="cursor: pointer;" title="Ouvrir le panneau de réglages"><kbd>Tab</kbd> ⚙️ Réglages</span>
+          <span class="badge badge-info" id="audio-btn" style="cursor: pointer;" title="Cliquer pour activer/désactiver le son">🔊 Son : <b id="stat-audio">ACTIF</b></span>
+          <span class="badge badge-danger" id="clear-obs-btn" style="cursor: pointer;" title="Cliquer pour supprimer tous les obstacles">🗑️ Vider Obstacles</span>
+        </div>
+        <div class="hud-controls">
+          <span><kbd>ZQSD / Flèches</kbd> 🎮 Conduire Camion</span>
+          <span><kbd>J</kbd> Mode Joueur/Auto</span>
+          <span><kbd>U</kbd> Masquer/Afficher HUD</span>
+          <span><kbd>L</kbd> Niveau (1-5)</span>
+          <span><kbd>H</kbd> +Hélicoptère (Largage)</span>
+          <span><kbd>Tab</kbd> / <kbd>T</kbd> Réglages</span>
+          <span><kbd>S</kbd> Cible (Garage/Souris)</span>
+          <span><kbd>Clic obstacle</kbd> Supprimer</span>
+          <span><kbd>Clic vide</kbd> +Obstacle</span>
+          <span><kbd>C</kbd> +Camion allié</span>
+          <span><kbd>P</kbd> +Police</span>
+          <span><kbd>D</kbd> Debug</span>
+          <span><kbd>M</kbd> Muet</span>
+          <span><kbd>R</kbd> Reset</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bouton flottant discret pour ré-afficher le menu lorsqu'il est masqué -->
+    <button id="hud-expand-btn" class="hud-floating-pill hidden" title="Afficher le menu HUD (Touche U)">
+      <span class="pill-icon">📋</span>
+      <span class="pill-text">Afficher Menu</span>
+      <kbd>U</kbd>
+    </button>
+
+    <!-- Tiroir / Modal de réglages des fonctionnalités et vitesses -->
+    <div id="settings-drawer" class="settings-drawer hidden">
+      <div class="settings-header">
+        <div class="settings-title">⚙️ RÉGLAGES DES VÉHICULES & VITESSES</div>
+        <button id="close-settings-btn" class="close-btn" title="Fermer (Tab)">✕</button>
+      </div>
+
+      <div class="settings-grid">
+        <!-- Colonne Camions -->
+        <div class="settings-col col-camion">
+          <div class="col-header">🚚 Camions (Trafic)</div>
+
+          <div class="setting-item">
+            <div class="setting-label-row">
+              <label for="slider-camion-speed">Vitesse max :</label>
+              <span class="setting-val" id="val-camion-speed">3.8 px/f</span>
+            </div>
+            <input type="range" id="slider-camion-speed" min="1.0" max="10.0" step="0.2" value="3.8">
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label-row">
+              <label for="slider-camion-force">Force / Maniabilité :</label>
+              <span class="setting-val" id="val-camion-force">0.28</span>
+            </div>
+            <input type="range" id="slider-camion-force" min="0.05" max="0.80" step="0.01" value="0.28">
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label-row">
+              <label for="slider-camion-flee">Rayon de fuite police :</label>
+              <span class="setting-val" id="val-camion-flee">180 px</span>
+            </div>
+            <input type="range" id="slider-camion-flee" min="60" max="400" step="10" value="180">
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label-row">
+              <label for="slider-camion-avoid">Poids évitement obstacles :</label>
+              <span class="setting-val" id="val-camion-avoid">3.6</span>
+            </div>
+            <input type="range" id="slider-camion-avoid" min="1.0" max="8.0" step="0.2" value="3.6">
+          </div>
+        </div>
+
+        <!-- Colonne Police -->
+        <div class="settings-col col-police">
+          <div class="col-header">🚓 Police (Poursuite)</div>
+
+          <div class="setting-item">
+            <div class="setting-label-row">
+              <label for="slider-police-speed">Vitesse max :</label>
+              <span class="setting-val" id="val-police-speed">4.4 px/f</span>
+            </div>
+            <input type="range" id="slider-police-speed" min="1.0" max="10.0" step="0.2" value="4.4">
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label-row">
+              <label for="slider-police-force">Force d'accélération :</label>
+              <span class="setting-val" id="val-police-force">0.32</span>
+            </div>
+            <input type="range" id="slider-police-force" min="0.05" max="0.90" step="0.01" value="0.32">
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label-row">
+              <label for="slider-police-radar">Radar de détection :</label>
+              <span class="setting-val" id="val-police-radar">400 px</span>
+            </div>
+            <input type="range" id="slider-police-radar" min="100" max="650" step="25" value="400">
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label-row">
+              <label for="slider-police-anticipation">Anticipation d'interception :</label>
+              <span class="setting-val" id="val-police-anticipation">1.5 s</span>
+            </div>
+            <input type="range" id="slider-police-anticipation" min="0.5" max="3.5" step="0.1" value="1.5">
+          </div>
+        </div>
+      </div>
+
+      <!-- Barre de préréglages -->
+      <div class="settings-presets">
+        <div class="presets-label">Préréglages rapides :</div>
+        <div class="presets-buttons">
+          <button class="preset-btn" id="preset-lvl1">Niv 1 (Intro)</button>
+          <button class="preset-btn" id="preset-lvl2">Niv 2 (Pression)</button>
+          <button class="preset-btn" id="preset-lvl3">Niv 3 (Barrages)</button>
+          <button class="preset-btn" id="preset-lvl4">Niv 4 (Traque)</button>
+          <button class="preset-btn" id="preset-lvl5">Niv 5 (Défi Final)</button>
+          <button class="preset-btn" id="preset-default">⚖️ Normal</button>
+          <button class="preset-btn" id="preset-speed">⚡ Course Rapide</button>
+          <button class="preset-btn" id="preset-police">🚨 Police Implacable</button>
+          <button class="preset-btn reset-btn" id="preset-reset">🔄 Réinitialiser</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
